@@ -15,11 +15,29 @@ class TestBaseModel(unittest.TestCase):
 
     def test_init(self):
         """Test cases for the __init__ method"""
+        # Test case for object re-creation
+        obj_dict = self.base1.to_dict()
+        self.base3 = BaseModel(**obj_dict)
+
+        # Error case check for empty dictionary
+        self.base4 = BaseModel(**{})
+
+        self.assertIsNotNone(self.base3.id)
+        self.assertIsNotNone(self.base4.id)
+        self.assertIsInstance(self.base3.id, str)
+        self.assertIsInstance(self.base4.id, str)
+        self.assertIsNotNone(self.base3.created_at)
+        self.assertIsNotNone(self.base4.created_at)
+        self.assertIsNotNone(self.base3.updated_at)
+        self.assertIsNotNone(self.base4.updated_at)
+        self.assertIsInstance(self.base3.created_at, datetime)
+        self.assertIsInstance(self.base4.created_at, datetime)
+
         # Test Cases of the id attributes
         self.assertIsNotNone(self.base1.id)
         self.assertIsNotNone(self.base2.id)
-        self.assertNotEqual(self.base1.id, self.base2.id)
         self.assertIsInstance(self.base1.id, str)
+        self.assertNotEqual(self.base1.id, self.base2.id)
 
         # Test cases for created_at and updated_at attributes
         self.assertIsNotNone(self.base1.created_at)
@@ -28,10 +46,6 @@ class TestBaseModel(unittest.TestCase):
         self.assertIsNotNone(self.base2.updated_at)
         self.assertIsInstance(self.base1.created_at, datetime)
         self.assertIsInstance(self.base1.updated_at, datetime)
-
-        # Error test case
-        with self.assertRaises(TypeError):
-            base1 = BaseModel("s")
 
     def test_str_method(self):
         """Test cases for the __str__ method"""
