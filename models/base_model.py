@@ -5,6 +5,7 @@ This module contains BaseModel implementation
 import uuid
 from datetime import datetime
 
+
 class BaseModel:
     """Represents a BaseModel with basic attributes/methods"""
     def __init__(self):
@@ -16,7 +17,7 @@ class BaseModel:
     def __str__(self):
         """Returns formatted string of the instance"""
         return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
-    
+
     def save(self):
         """Updates the updated_at timestamp"""
         self.updated_at = datetime.now()
@@ -24,9 +25,8 @@ class BaseModel:
     def to_dict(self):
         """Returns dictionary representation of BaseModel instance"""
         return {
-            "id": self.id, 
+            "id": self.id,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "__class__": self.__class__.__name__
         }
-    

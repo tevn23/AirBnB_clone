@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Contains test cases on the base_model"""
+"""
+Contains test cases on the base_model
+"""
 import unittest
 from models.base_model import BaseModel
 from datetime import datetime
 
+
 class TestBaseModel(unittest.TestCase):
     """Test cases for the BaseModel"""
-
     def setUp(self):
         self.base1 = BaseModel()
         self.base2 = BaseModel()
 
     def test_init(self):
+        """Test cases for the __init__ method"""
         # Test Cases of the id attributes
         self.assertIsNotNone(self.base1.id)
         self.assertIsNotNone(self.base2.id)
@@ -26,28 +29,27 @@ class TestBaseModel(unittest.TestCase):
         self.assertIsInstance(self.base1.created_at, datetime)
         self.assertIsInstance(self.base1.updated_at, datetime)
 
+        # Error test case
         with self.assertRaises(TypeError):
             base1 = BaseModel("s")
 
     def test_str_method(self):
-        
+        """Test cases for the __str__ method"""
         s_exp = f"[BaseModel] ({self.base1.id}) {self.base1.__dict__}"
         self.assertEqual(str(self.base1), s_exp)
 
     def test_save(self):
-
+        """Test cases for the save method"""
         before_save = self.base1.updated_at
         self.base1.save()
         self.assertNotEqual(before_save, self.base1.updated_at)
         self.assertGreater(self.base1.updated_at, before_save)
 
-
     def test_to_dict(self):
-        
+        """Test cases for the to_dict method"""
         isofmt = self.base1.created_at.isoformat()
         isofmt2 = self.base1.updated_at.isoformat()
         dict_return = self.base1.to_dict()
-       
 
         self.assertIsInstance(dict_return, dict)
         self.assertIn("id", dict_return)
