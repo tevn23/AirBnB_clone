@@ -3,6 +3,7 @@
 This module contains BaseModel implementation
 """
 import uuid
+from models.__init__ import storage
 from datetime import datetime
 
 
@@ -20,13 +21,20 @@ class BaseModel:
         if "updated_at" in kwargs:
             self.updated_at = datetime.strptime(kwargs["updated_at"], fmt_str)
 
+        if not kwargs:
+            storage.new(self)
+
     def __str__(self):
         """Returns formatted string of the instance"""
         return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
 
     def save(self):
-        """Updates the updated_at timestamp"""
+        """Updates the `updated_at` timestamp"""
         self.updated_at = datetime.now()
+
+        # Updates the timestamp on saved instance before saving to file
+        storage.new(self)
+        storage.save()
 
     def to_dict(self):
         """Returns dictionary representation of BaseModel instance"""
