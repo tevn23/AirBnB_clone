@@ -12,11 +12,13 @@ class BaseModel:
     def __init__(self, *args, **kwargs):
         """Initializes BaseModel instances"""
         self.id = kwargs.get("id", str(uuid.uuid4()))
-        self.created_at = kwargs.get("created_at", datetime.now())
+        self.created_at = kwargs.get("created_at", datetime.utcnow())
         self.updated_at = kwargs.get("updated_at", self.created_at)
 
         fmt_str = "%Y-%m-%dT%H:%M:%S.%f"
+
         if "created_at" in kwargs:
+            print("Testing")
             self.created_at = datetime.strptime(kwargs["created_at"], fmt_str)
         if "updated_at" in kwargs:
             self.updated_at = datetime.strptime(kwargs["updated_at"], fmt_str)
@@ -43,4 +45,4 @@ class BaseModel:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "__class__": self.__class__.__name__
-        }
+            }
