@@ -2,13 +2,21 @@
 from models.base_model import BaseModel
 
 base1 = BaseModel()
+base1.name = "Our first model"
 
-print(base1.__dict__)
-print(type(base1.created_at))
-# print(type(base1.updated_at))
+print("Initial Base attributes")
+print(f"\t{base1.id}")
+print(f"\t{base1}")
 
+print("\nto_dict return:")
 dict_return = base1.to_dict()
-print(type(base1.created_at))
-isofmt = base1.created_at.isoformat()
-print(type(base1.created_at))
-isofmt2 = base1.updated_at.isoformat()
+for key in dict_return:
+    print(f"\t{key}: ({type(dict_return[key])}) - ({dict_return[key]})")
+
+print("\nObject re-creation")
+base2 = BaseModel(**dict_return)
+print(f"\t{base2.id}")
+print(f"\t{base2}")
+
+print("\nAre they same object?")
+print(base1 is base2)
