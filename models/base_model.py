@@ -12,7 +12,7 @@ class BaseModel:
     def __init__(self, *args, **kwargs):
         """Initializes BaseModel instances"""
         self.id = kwargs.get("id", str(uuid.uuid4()))
-        self.created_at = kwargs.get("created_at", datetime.utcnow())
+        self.created_at = kwargs.get("created_at", datetime.now())
         self.updated_at = kwargs.get("updated_at", self.created_at)
 
         fmt_str = "%Y-%m-%dT%H:%M:%S.%f"
