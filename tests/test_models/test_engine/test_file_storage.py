@@ -29,7 +29,8 @@ class TestFileStorage(unittest.TestCase):
         self.base1 = BaseModel()
         self.storage.new(self.base1)
         self.key = f"<BaseModel>.{self.base1.id}"
-        self.expected_data = {self.key: self.base1.to_dict()}
+        r_dict = self.base1.to_dict()
+        self.expected_data = {self.key: r_dict}
 
     def tearDown(self):
         """Clean up test environment"""

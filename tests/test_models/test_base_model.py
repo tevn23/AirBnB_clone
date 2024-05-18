@@ -74,7 +74,7 @@ class TestBaseModel(unittest.TestCase):
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("json.dump")
-    def test_save(self, mock_json_dump, mock_file_open):
+    def test_save_base_model(self, mock_json_dump, mock_file_open):
         """Test cases for the save method"""
         before_save = self.base1.updated_at
         self.base1.save()
@@ -89,31 +89,35 @@ class TestBaseModel(unittest.TestCase):
         # by instance save()
         key = f"<BaseModel>.{self.base1.id}"
         key2 = f"<BaseModel>.{self.base2.id}"
-        expected_data = {
-                key: self.base1.to_dict(),
-                key2: self.base2.to_dict()
-        }
+
+        r_dict = self.base1.to_dict()
+        r_dict2 = self.base2.to_dict()
+
         # Although save is called on just self.base1
         # self.base2 was added to storage during initialization
         # and is thus saved
+        expected_data = {
+                key: r_dict,
+                key2: r_dict2
+        }
 
         # Checks if json.dump was called with the right arguments
         mock_json_dump.assert_called_once_with(expected_data, mock_file_open())
 
     def test_to_dict(self):
         """Test cases for the to_dict method"""
-        isofmt = self.base1.created_at.isoformat()
-        isofmt2 = self.base1.updated_at.isoformat()
+        date = self.base1.created_at.isoformat()
+        date2 = self.base1.updated_at.isoformat()
         dict_return = self.base1.to_dict()
 
-        self.assertIsInstance(dict_return, dict)
         self.assertIn("id", dict_return)
+        self.assertIn("__class__", dict_return)
         self.assertIn("updated_at", dict_return)
         self.assertIn("created_at", dict_return)
-        self.assertIn("__class__", dict_return)
+        self.assertIsInstance(dict_return, dict)
 
-        self.assertEqual(dict_return["created_at"], isofmt)
-        self.assertEqual(dict_return["updated_at"], isofmt2)
+        self.assertEqual(dict_return["created_at"], date)
+        self.assertEqual(dict_return["updated_at"], date2)
+        self.assertEqual(dict_return["__class__"], "BaseModel")
         self.assertIsInstance(dict_return["created_at"], str)
         self.assertIsInstance(dict_return["updated_at"], str)
-        self.assertEqual(dict_return["__class__"], "BaseModel")

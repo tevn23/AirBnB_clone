@@ -31,7 +31,7 @@ class BaseModel:
 
     def save(self):
         """Updates the `updated_at` timestamp"""
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.utcnow()
 
         # Updates the timestamp on saved instance before saving to file
         storage.new(self)
@@ -44,4 +44,4 @@ class BaseModel:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "__class__": self.__class__.__name__
-            }
+        }
