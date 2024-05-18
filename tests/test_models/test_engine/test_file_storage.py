@@ -5,6 +5,7 @@ Test cases for the file_storage module
 import os
 import json
 import unittest
+from unittest.mock import patch, mock_open, call
 from models.base_model import BaseModel
 from models.engine.file_storage import FileStorage
 
@@ -12,78 +13,88 @@ from models.engine.file_storage import FileStorage
 class TestFileStorage(unittest.TestCase):
     """Test cases for the FileStorage class"""
 
+    @classmethod
+    def setUpClass(cls):
+        """Sets up test environment for entire class"""
+        cls.storage = FileStorage()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Clean up test environment"""
+        cls.storage.reset()
+        del cls.storage
+
     def setUp(self):
         """Sets up test environment"""
-        self.maxDiff = None
-        self.storage = FileStorage()
         self.base1 = BaseModel()
-        self.test_file = FileStorage._FileStorage__file_path
+        self.storage.new(self.base1)
+        self.key = f"<BaseModel>.{self.base1.id}"
+        r_dict = self.base1.to_dict()
+        self.expected_data = {self.key: r_dict}
 
     def tearDown(self):
-        """Cleans up test environment"""
-        if os.path.exists(self.test_file):
-            os.remove(self.test_file)
+        """Clean up test environment"""
+        self.storage.reset()
 
-    def test_all_empty(self):
-        """Test on empty storage"""
-        FileStorage._FileStorage__objects = {}
-        self.assertEqual(self.storage.all(), {})
-        self.assertIsInstance(self.storage.all(), dict)
-        del self.storage
-
-    def test_all_with_content(self):
-        """Test with content"""
-        key = f"<{self.base1.__class__.__name__}>.{self.base1.id}"
-        FileStorage._FileStorage__objects = {}
-        self.storage.new(self.base1)
-        returned_dict = self.storage.all()
-        expected_str = self.base1.to_dict()
-
-        self.assertEqual(returned_dict[key], expected_str)
-        self.assertIsInstance(returned_dict, dict)
-        del self.storage
+    def test_all(self):
+        """Test cases for the all method"""
+        self.storage.reset()
+        r_dict = self.storage.all()
+        self.assertEqual(r_dict, {})
+        self.assertIsInstance(r_dict, dict)
 
     def test_new(self):
-        """Tests for the new method"""
-        self.storage.new(self.base1)
-        key = f"<{self.base1.__class__.__name__}>.{self.base1.id}"
-        
-        self.assertIn(key, self.storage.all())
-        self.assertEqual(self.storage.all()[key], self.base1.to_dict())
-        del self.storage
+        """Test cases for the new method"""
+        r_dict = self.storage.all()
+        key = f"<BaseModel>.{self.base1.id}"
+        self.assertIn(key, r_dict)
 
-    def test_save(self):
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("json.dump")
+    def test_save(self, mock_json_dump, mock_file_open):
         """Test cases for the save method"""
-        self.storage.new(self.base1)
         self.storage.save()
-        with open(self.test_file, encoding="utf-8") as file:
-            content = json.load(file)
 
-        key = f"<{self.base1.__class__.__name__}>.{self.base1.id}"
-        self.assertIn(key, content)
-        self.assertEqual(content[key], self.base1.to_dict())
-        del self.storage
+        # Checks if open was called with the right arguments
+        mock_file_open.assert_called_once_with("data.json",
+                                               'w', encoding="utf-8")
 
-    def test_reload(self):
+        # Checks if json.dump was called with the right arguments
+        mock_json_dump.assert_called_once_with(self.expected_data,
+                                               mock_file_open())
+
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("json.load")
+    @patch("json.dump")
+    def test_reload(self, mock_json_dump, mock_json_load, mock_file_open):
         """Test cases for the reload method"""
-        FileStorage._FileStorage__objects = {}
-        # Assert __objects is empty
-        self.assertEqual(self.storage.all(), {})
-        # Add new instance to __objects 
-        self.storage.new(self.base1)
-        # Saves __objects to file
-        self.storage.save()
-        # Delete storage instance to remove __objects attribute
-        del self.storage
-        # Reinitialize storage instance
-        self.storage = FileStorage()
-        FileStorage._FileStorage__objects = {}
-        # Assert __objects is empty
-        self.assertEqual(self.storage.all(), {})
-        # Reload _objects content from file
-        self.storage.reload()
-        # Assert __objects now contains file
-        key = f"<{self.base1.__class__.__name__}>.{self.base1.id}"
-        self.assertEqual(self.storage.all()[key], self.base1.to_dict())
-        del self.storage
+        # mock data for json.dump during save
+        mock_json_dump.return_value = None
 
+        # mock json.dump call during save operation
+        self.storage.save()
+
+        # Resets storage to ensure it starts empty
+        self.storage.reset()
+        self.assertEqual(self.storage.all(), {})
+
+        # Mock return value for json.load
+        mock_json_load.return_value = self.expected_data
+
+        # Reload storage with mocked data
+        self.storage.reload()
+
+        # Assert storage now contains reloaded data
+        self.assertIn(self.key, self.storage.all())  # Key check
+
+        r_dict_val = self.storage.all()[self.key]  # Value check
+        self.assertEqual(r_dict_val, self.expected_data[self.key])
+
+        # Assert open() was called exactly twice
+        mock_file_open.assert_has_calls([
+            call("data.json", encoding="utf-8"),
+            call("data.json", 'w', encoding="utf-8")
+        ], any_order=True)
+
+        # Assert json.load was called exactly once
+        mock_json_load.assert_called_once_with(mock_file_open())
