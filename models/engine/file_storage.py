@@ -31,3 +31,8 @@ class FileStorage:
                 self.__objects = json.load(file)
         except FileNotFoundError:
             pass
+
+    def reset(self):
+        """Resets class's __objects attribute"""
+        # Added for testing class functionalities
+        self.__objects = {}

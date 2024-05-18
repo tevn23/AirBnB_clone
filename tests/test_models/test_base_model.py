@@ -3,8 +3,10 @@
 Contains test cases on the base_model
 """
 import unittest
-from models.base_model import BaseModel
 from datetime import datetime
+from models.base_model import BaseModel
+from unittest.mock import patch, mock_open
+from models.__init__ import storage
 
 
 class TestBaseModel(unittest.TestCase):
@@ -14,8 +16,17 @@ class TestBaseModel(unittest.TestCase):
         self.base1 = BaseModel()
         self.base2 = BaseModel()
 
-    def test_init(self):
+    def tearDown(self):
+        """cleans up the test environment"""
+        del self.base1
+        del self.base2
+        storage.reset()
+
+    @patch("models.__init__.storage.new")
+    def test_init(self, mock_new):
         """Test cases for the __init__ method"""
+        base = BaseModel()
+
         # Test Cases of the id attributes
         self.assertIsNotNone(self.base1.id)
         self.assertIsNotNone(self.base2.id)
@@ -29,6 +40,9 @@ class TestBaseModel(unittest.TestCase):
         self.assertIsNotNone(self.base2.updated_at)
         self.assertIsInstance(self.base1.created_at, datetime)
         self.assertIsInstance(self.base1.updated_at, datetime)
+
+        # Verify that storage.new() was called once with the new instance
+        mock_new.assert_called_once_with(base)
 
     def test_recreate(self):
         """Test case for objects re-creation"""
@@ -58,12 +72,33 @@ class TestBaseModel(unittest.TestCase):
         s_exp = f"[BaseModel] ({self.base1.id}) {self.base1.__dict__}"
         self.assertEqual(str(self.base1), s_exp)
 
-    def test_save(self):
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("json.dump")
+    def test_save(self, mock_json_dump, mock_file_open):
         """Test cases for the save method"""
         before_save = self.base1.updated_at
         self.base1.save()
         self.assertNotEqual(before_save, self.base1.updated_at)
         self.assertGreater(self.base1.updated_at, before_save)
+
+        # Checks if open was called with the right arguments
+        mock_file_open.assert_called_once_with("data.json",
+                                               'w', encoding="utf-8")
+
+        # Indicates expected data by json.dump via storage's save()
+        # by instance save()
+        key = f"<BaseModel>.{self.base1.id}"
+        key2 = f"<BaseModel>.{self.base2.id}"
+        expected_data = {
+                key: self.base1.to_dict(),
+                key2: self.base2.to_dict()
+        }
+        # Although save is called on just self.base1
+        # self.base2 was added to storage during initialization
+        # and is thus saved
+
+        # Checks if json.dump was called with the right arguments
+        mock_json_dump.assert_called_once_with(expected_data, mock_file_open())
 
     def test_to_dict(self):
         """Test cases for the to_dict method"""
