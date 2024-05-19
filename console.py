@@ -5,6 +5,12 @@ Contains the command interpreter for the Airbnb clone
 import cmd
 import shlex
 from models import storage
+from models.city import City
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.review import Review
+from models.amenity import Amenity
 from models.base_model import BaseModel
 
 
@@ -12,7 +18,15 @@ class HBNBCommand(cmd.Cmd):
     """Command Interpreter for the Airbnb"""
     prompt = "(hbnb) "
 
-    class_list = ["BaseModel"]
+    class_list = {
+            "City": City,
+            "User": User,
+            "Place": Place,
+            "State": State,
+            "Review": Review,
+            "Amenity": Amenity,
+            "BaseModel": BaseModel
+    }
 
     def do_create(self, arg):
         """Creates and saves a new instance of BaseModel"""
@@ -23,9 +37,10 @@ class HBNBCommand(cmd.Cmd):
 
         elif len(args) == 1:
             if args[0] in self.class_list:
-                base = BaseModel()
-                base.save()
-                print(base.id)
+                cls = self.class_list[args[0]]
+                inst = cls()
+                inst.save()
+                print(inst.id)
 
             else:
                 print("** class doesn't exist **")
@@ -48,8 +63,9 @@ class HBNBCommand(cmd.Cmd):
                 stored_dict = storage.all()
 
                 if key in stored_dict:
-                    re_base = BaseModel(**stored_dict[key])
-                    print(re_base)
+                    cls = self.class_list[args[0]]
+                    re_inst = cls(**stored_dict[key])
+                    print(re_inst)
 
                 else:
                     print("** no instance found **")
@@ -88,16 +104,21 @@ class HBNBCommand(cmd.Cmd):
 
         if not args:
             for key in stored_dict:
-                re_base = BaseModel(**stored_dict[key])
-                class_dict.append(str(re_base))
+                cls_name = stored_dict[key]["__class__"]
+
+                cls = self.class_list[cls_name]
+
+                re_inst = cls(**stored_dict[key])
+                class_dict.append(str(re_inst))
             print(class_dict)
 
         else:
             if args[0] in self.class_list:
                 for key, val in stored_dict.items():
                     if args[0] == val["__class__"]:
-                        re_base = BaseModel(**val)
-                        class_dict.append(str(re_base))
+                        cls = self.class_list[args[0]]
+                        re_inst = cls(**val)
+                        class_dict.append(str(re_inst))
                 print(class_dict)
 
             else:
