@@ -12,7 +12,6 @@ class FileStorage:
     __file_path = "data.json"
     __objects = {}
 
-
     def all(self):
         """Return all instances dict representation"""
         return self.__objects
@@ -22,16 +21,15 @@ class FileStorage:
         key = f"{obj.__class__.__name__}.{obj.id}"
         self.__objects[key] = obj.to_dict()
 
-
     def save(self):
         """serializes objects to the JSON file"""
-        
         # Convert datetime objects to json serializable str
         stored_objs = copy.deepcopy(self.__objects)
         for key, value in stored_objs.items():
-            if "created_at" in value and isinstance(value["created_at"], datetime):
+            dt = ["created_at", "updated_at"]
+            if dt[0] in value and isinstance(value[dt[0]], datetime):
                 value["created_at"] = value["created_at"].isoformat()
-            if "updated_at" in value and isinstance(value["updated_at"], datetime):
+            if dt[1] in value and isinstance(value[dt[1]], datetime):
                 value["updated_at"] = value["updated_at"].isoformat()
 
         # Saves dict obj to file
@@ -46,15 +44,15 @@ class FileStorage:
                     self.__objects = json.load(file)
                 except json.JSONDecodeError:
                     pass
-
             fmt_str = "%Y-%m-%dT%H:%M:%S.%f"
 
             # Re-converts str objects to datetime objects
+            dt = ["created_at", "updated_at"]
             for key, value in self.__objects.items():
                 if "created_at" in value:
-                    value["created_at"] = datetime.strptime(value["created_at"], fmt_str)
+                    value[dt[0]] = datetime.strptime(value[dt[0]], fmt_str)
                 if "updated_at" in value:
-                    value["updated_at"] = datetime.strptime(value["updated_at"], fmt_str)
+                    value[dt[1]] = datetime.strptime(value[dt[1]], fmt_str)
 
         except FileNotFoundError:
             pass

@@ -16,8 +16,10 @@ class BaseModel:
             self.updated_at = self.created_at = datetime.now()
             storage.new(self)
         else:
+            exed = ["created_at", "updated_at"]
+
             for key, value in kwargs.items():
-                if key in ["created_at", "updated_at"] and isinstance(value, str):
+                if key in exed and isinstance(value, str):
                     value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
 
                 if key != "__class__":

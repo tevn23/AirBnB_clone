@@ -59,12 +59,6 @@ class TestFileStorage(unittest.TestCase):
         mock_file_open.assert_called_once_with("data.json",
                                                'w', encoding="utf-8")
 
-        # Assert open() was called exactly twice
-        #mock_file_open.assert_has_calls([
-        #    call("data.json", encoding="utf-8"),
-        #    call("data.json", 'w', encoding="utf-8")
-        #], any_order=True)
-
         # Checks if json.dump was called with the right arguments
         mock_json_dump.assert_called_once_with(self.expected_data,
                                                mock_file_open())

@@ -70,7 +70,7 @@ class HBNBCommand(cmd.Cmd):
             else:
                 key = f"{args[0]}.{args[1]}"
                 stored_dict = storage.all()
-                
+
                 if key in stored_dict:
                     del stored_dict[key]
 
@@ -90,7 +90,6 @@ class HBNBCommand(cmd.Cmd):
             for key in stored_dict:
                 re_base = BaseModel(**stored_dict[key])
                 class_dict.append(str(re_base))
-
             print(class_dict)
 
         else:
@@ -99,7 +98,6 @@ class HBNBCommand(cmd.Cmd):
                     if args[0] == val["__class__"]:
                         re_base = BaseModel(**val)
                         class_dict.append(str(re_base))
-
                 print(class_dict)
 
             else:
@@ -119,7 +117,7 @@ class HBNBCommand(cmd.Cmd):
             else:
                 key = f"{args[0]}.{args[1]}"
                 stored_dict = storage.all()
-                
+
                 if key in stored_dict:
                     if len(args) == 2:
                         print("** attribute name missing **")
@@ -147,7 +145,6 @@ class HBNBCommand(cmd.Cmd):
     def emptyline(self):
         """Called when an empty line is entered"""
         pass
-
 
 
 if __name__ == "__main__":
