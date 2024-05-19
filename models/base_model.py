@@ -15,7 +15,6 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.updated_at = self.created_at = datetime.now()
             storage.new(self)
-
         else:
             for key, value in kwargs.items():
                 if key in ["created_at", "updated_at"] and isinstance(value, str):
