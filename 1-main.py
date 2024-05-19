@@ -12,23 +12,21 @@ print("-- Create a new object --")
 my_model = BaseModel()
 my_model.name = "My_First_Model"
 my_model.my_number = 89
-print(storage.all())
 my_model.save()
 print(my_model)
-
+"""
 print("\n+++ Storage Test +++")
 print("__objects before update")
 print(storage.all())
 print("updating")
 my_model.e_mail = "Awesome@mail.com"
-my_model.save()
-print("__objects after update")
-print(storage.all())
 print("saving")
-storage.save()
+my_model.save()
+print("__objects after update\n")
+print(storage.all())
 print("Resetting")
 storage.reset()
 print("Reloading")
 storage.reload()
 print("__objects after reload")
-print(storage.all())
+print(storage.all())"""

@@ -22,6 +22,16 @@ class TestBaseModel(unittest.TestCase):
         del self.base2
         storage.reset()
 
+    def test_doc_str(self):
+        """Test cases for docstrings"""
+        self.assertIsNotNone(BaseModel.__module__.__doc__)
+        self.assertIsNotNone(BaseModel.__class__.__doc__)
+        self.assertIsNotNone(BaseModel.__doc__)
+        self.assertIsNotNone(BaseModel.__init__.__doc__)
+        self.assertIsNotNone(BaseModel.__str__.__doc__)
+        self.assertIsNotNone(BaseModel.save.__doc__)
+        self.assertIsNotNone(BaseModel.to_dict.__doc__)
+
     @patch("models.storage.new")
     def test_init(self, mock_new):
         """Test cases for the __init__ method"""
