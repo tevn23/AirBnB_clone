@@ -3,10 +3,10 @@
 Contains test cases on the base_model
 """
 import unittest
+from models import storage
 from datetime import datetime
 from models.base_model import BaseModel
 from unittest.mock import patch, mock_open
-from models.__init__ import storage
 
 
 class TestBaseModel(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestBaseModel(unittest.TestCase):
         del self.base2
         storage.reset()
 
-    @patch("models.__init__.storage.new")
+    @patch("models.storage.new")
     def test_init(self, mock_new):
         """Test cases for the __init__ method"""
         base = BaseModel()
@@ -87,8 +87,8 @@ class TestBaseModel(unittest.TestCase):
 
         # Indicates expected data by json.dump via storage's save()
         # by instance save()
-        key = f"<BaseModel>.{self.base1.id}"
-        key2 = f"<BaseModel>.{self.base2.id}"
+        key = f"BaseModel.{self.base1.id}"
+        key2 = f"BaseModel.{self.base2.id}"
 
         r_dict = self.base1.to_dict()
         r_dict2 = self.base2.to_dict()

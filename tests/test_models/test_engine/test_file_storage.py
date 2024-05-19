@@ -5,8 +5,8 @@ Test cases for the file_storage module
 import os
 import json
 import unittest
-from unittest.mock import patch, mock_open, call
 from models.base_model import BaseModel
+from unittest.mock import patch, mock_open, call
 from models.engine.file_storage import FileStorage
 
 
@@ -28,7 +28,7 @@ class TestFileStorage(unittest.TestCase):
         """Sets up test environment"""
         self.base1 = BaseModel()
         self.storage.new(self.base1)
-        self.key = f"<BaseModel>.{self.base1.id}"
+        self.key = f"BaseModel.{self.base1.id}"
         r_dict = self.base1.to_dict()
         self.expected_data = {self.key: r_dict}
 
@@ -46,7 +46,7 @@ class TestFileStorage(unittest.TestCase):
     def test_new(self):
         """Test cases for the new method"""
         r_dict = self.storage.all()
-        key = f"<BaseModel>.{self.base1.id}"
+        key = f"BaseModel.{self.base1.id}"
         self.assertIn(key, r_dict)
 
     @patch("builtins.open", new_callable=mock_open)
@@ -58,6 +58,12 @@ class TestFileStorage(unittest.TestCase):
         # Checks if open was called with the right arguments
         mock_file_open.assert_called_once_with("data.json",
                                                'w', encoding="utf-8")
+
+        # Assert open() was called exactly twice
+        #mock_file_open.assert_has_calls([
+        #    call("data.json", encoding="utf-8"),
+        #    call("data.json", 'w', encoding="utf-8")
+        #], any_order=True)
 
         # Checks if json.dump was called with the right arguments
         mock_json_dump.assert_called_once_with(self.expected_data,

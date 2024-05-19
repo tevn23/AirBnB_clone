@@ -3,6 +3,7 @@ from models.base_model import BaseModel
 
 base1 = BaseModel()
 base1.name = "Our first model"
+base1.number = 89
 
 print("Initial Base attributes")
 print(f"\t{base1.id}")
