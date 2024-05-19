@@ -3,7 +3,7 @@
 This module contains BaseModel implementation
 """
 import uuid
-from models.__init__ import storage
+from models import storage
 from datetime import datetime
 
 
@@ -11,19 +11,17 @@ class BaseModel:
     """Represents a BaseModel with basic attributes/methods"""
     def __init__(self, *args, **kwargs):
         """Initializes BaseModel instances"""
-        self.id = kwargs.get("id", str(uuid.uuid4()))
-        self.created_at = kwargs.get("created_at", datetime.now())
-        self.updated_at = kwargs.get("updated_at", self.created_at)
-
-        fmt_str = "%Y-%m-%dT%H:%M:%S.%f"
-
-        if "created_at" in kwargs:
-            self.created_at = datetime.strptime(kwargs["created_at"], fmt_str)
-        if "updated_at" in kwargs:
-            self.updated_at = datetime.strptime(kwargs["updated_at"], fmt_str)
-
         if not kwargs:
-            storage.new(self)  # Removed storage for each instantiation
+            self.id = str(uuid.uuid4())
+            self.updated_at = self.created_at = datetime.now()
+            storage.new(self)
+        else:
+            for key, value in kwargs.items():
+                if key in ["created_at", "updated_at"] and isinstance(value, str):
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+
+                if key != "__class__":
+                    setattr(self, key, value)
 
     def __str__(self):
         """Returns formatted string of the instance"""
@@ -31,7 +29,7 @@ class BaseModel:
 
     def save(self):
         """Updates the `updated_at` timestamp"""
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now()
 
         # Updates the timestamp on saved instance before saving to file
         storage.new(self)
@@ -39,9 +37,9 @@ class BaseModel:
 
     def to_dict(self):
         """Returns dictionary representation of BaseModel instance"""
-        return {
-            "id": self.id,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-            "__class__": self.__class__.__name__
-        }
+        re_dict = self.__dict__.copy()
+        re_dict["created_at"] = self.created_at.isoformat()
+        re_dict["updated_at"] = self.updated_at.isoformat()
+        re_dict["__class__"] = self.__class__.__name__
+
+        return re_dict
