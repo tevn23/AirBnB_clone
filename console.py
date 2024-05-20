@@ -16,6 +16,7 @@ from models.base_model import BaseModel
 
 class HBNBCommand(cmd.Cmd):
     """Command Interpreter for the Airbnb"""
+    intro = "The Command Interpreter for the Airbnb"
     prompt = "(hbnb) "
 
     class_list = {
@@ -27,6 +28,8 @@ class HBNBCommand(cmd.Cmd):
             "Amenity": Amenity,
             "BaseModel": BaseModel
     }
+
+    CLASS_LIST = list(class_list)
 
     def do_create(self, arg):
         """Creates and saves a new instance of BaseModel"""
@@ -146,6 +149,29 @@ class HBNBCommand(cmd.Cmd):
         else:
             print("** class doesn't exist **")
 
+    def complete_command(self, text, line, begidx, endidx, command):
+        """Common completion method for class-based commands"""
+        if not text:
+            completions = self.CLASS_LIST[:]
+        else:
+            completions = [cls for cls in self.CLASS_LIST if cls.startswith(text)]
+        return completions
+
+    def complete_create(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'create')
+
+    def complete_destroy(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'destroy')
+
+    def complete_show(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'show')
+
+    def complete_all(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'all')
+
+    def complete_update(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'update')
+
     def do_quit(self, arg):
         """Quits command to exit the program"""
         return True
@@ -153,6 +179,9 @@ class HBNBCommand(cmd.Cmd):
     def do_EOF(self, arg):
         """EOF (Ctrl+D) command to exit the program"""
         return True
+
+    # Quit the interpreter using exit
+    do_exit = do_quit
 
     def emptyline(self):
         """Called when an empty line is entered"""
