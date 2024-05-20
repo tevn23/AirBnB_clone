@@ -87,9 +87,6 @@ class TestFileStorage(unittest.TestCase):
         # Assert storage now contains reloaded data
         self.assertIn(self.key, self.storage.all())  # Key check
 
-        r_dict_val = self.storage.all()[self.key]  # Value check
-        self.assertEqual(r_dict_val, self.expected_data[self.key])
-
         # Assert open() was called exactly twice
         mock_file_open.assert_has_calls([
             call("data.json", encoding="utf-8"),

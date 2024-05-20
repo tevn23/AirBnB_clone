@@ -60,9 +60,7 @@ class HBNBCommand(cmd.Cmd):
                     stored_dict = storage.all()
 
                     if key in stored_dict:
-                        cls = self.class_list[args[0]]
-                        re_inst = cls(**stored_dict[key])
-                        print(re_inst)
+                        print(stored_dict[key])
 
                     else:
                         print("** no instance found **")
@@ -103,21 +101,15 @@ class HBNBCommand(cmd.Cmd):
 
         if not args:
             for key in stored_dict:
-                cls_name = stored_dict[key]["__class__"]
-
-                cls = self.class_list[cls_name]
-
-                re_inst = cls(**stored_dict[key])
-                class_dict.append(str(re_inst))
+                class_dict.append(str(stored_dict[key]))
             print(class_dict)
 
         else:
             if args[0] in self.class_list:
                 for key, val in stored_dict.items():
-                    if args[0] == val["__class__"]:
-                        cls = self.class_list[args[0]]
-                        re_inst = cls(**val)
-                        class_dict.append(str(re_inst))
+
+                    if args[0] == val.__class__.__name__:
+                        class_dict.append(str(val))
                 print(class_dict)
 
             else:
@@ -147,8 +139,8 @@ class HBNBCommand(cmd.Cmd):
                             print("** value missing **")
 
                         else:
-                            stored_dict[key][args[2]] = args[3]
-                            storage.save()
+                            setattr(stored_dict[key], args[2], args[3])
+                            stored_dict[key].save()
                 else:
                     print("** no instance found **")
         else:

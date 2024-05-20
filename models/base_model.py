@@ -11,11 +11,7 @@ class BaseModel:
     """Represents a BaseModel with basic attributes/methods"""
     def __init__(self, *args, **kwargs):
         """Initializes BaseModel instances"""
-        if not kwargs:
-            self.id = str(uuid.uuid4())
-            self.updated_at = self.created_at = datetime.now()
-            storage.new(self)
-        else:
+        if kwargs:
             exed = ["created_at", "updated_at"]
 
             for key, value in kwargs.items():
@@ -24,6 +20,10 @@ class BaseModel:
 
                 if key != "__class__":
                     setattr(self, key, value)
+        else:
+            self.id = str(uuid.uuid4())
+            self.updated_at = self.created_at = datetime.now()
+            storage.new(self)
 
     def __str__(self):
         """Returns formatted string of the instance"""
