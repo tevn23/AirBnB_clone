@@ -51,26 +51,25 @@ class HBNBCommand(cmd.Cmd):
         """Prints an instance string representation"""
         args = arg.split()
 
-        if not args:
-            print("** class name missing **")
-
-        if args[0] in self.class_list:
-            if len(args) == 1:
-                print("** instance id missing **")
-
-            else:
-                key = f"{args[0]}.{args[1]}"
-                stored_dict = storage.all()
-
-                if key in stored_dict:
-                    cls = self.class_list[args[0]]
-                    re_inst = cls(**stored_dict[key])
-                    print(re_inst)
-
+        if args:
+            if args[0] in self.class_list:
+                if len(args) == 1:
+                    print("** instance id missing **")
                 else:
-                    print("** no instance found **")
+                    key = f"{args[0]}.{args[1]}"
+                    stored_dict = storage.all()
+
+                    if key in stored_dict:
+                        cls = self.class_list[args[0]]
+                        re_inst = cls(**stored_dict[key])
+                        print(re_inst)
+
+                    else:
+                        print("** no instance found **")
+            else:
+                print("** class doesn't exist **")
         else:
-            print("** class doesn't exist **")
+            print("** class name missing **")
 
     def do_destroy(self, arg):
         """Deletes an instance"""
