@@ -16,6 +16,7 @@ from models.base_model import BaseModel
 
 class HBNBCommand(cmd.Cmd):
     """Command Interpreter for the Airbnb"""
+    intro = "The Command Interpreter for the Airbnb"
     prompt = "(hbnb) "
 
     class_list = {
@@ -27,6 +28,8 @@ class HBNBCommand(cmd.Cmd):
             "Amenity": Amenity,
             "BaseModel": BaseModel
     }
+
+    CLASS_LIST = list(class_list)
 
     def do_create(self, arg):
         """Creates and saves a new instance of BaseModel"""
@@ -60,9 +63,7 @@ class HBNBCommand(cmd.Cmd):
                     stored_dict = storage.all()
 
                     if key in stored_dict:
-                        cls = self.class_list[args[0]]
-                        re_inst = cls(**stored_dict[key])
-                        print(re_inst)
+                        print(stored_dict[key])
 
                     else:
                         print("** no instance found **")
@@ -103,21 +104,15 @@ class HBNBCommand(cmd.Cmd):
 
         if not args:
             for key in stored_dict:
-                cls_name = stored_dict[key]["__class__"]
-
-                cls = self.class_list[cls_name]
-
-                re_inst = cls(**stored_dict[key])
-                class_dict.append(str(re_inst))
+                class_dict.append(str(stored_dict[key]))
             print(class_dict)
 
         else:
             if args[0] in self.class_list:
                 for key, val in stored_dict.items():
-                    if args[0] == val["__class__"]:
-                        cls = self.class_list[args[0]]
-                        re_inst = cls(**val)
-                        class_dict.append(str(re_inst))
+
+                    if args[0] == val.__class__.__name__:
+                        class_dict.append(str(val))
                 print(class_dict)
 
             else:
@@ -147,12 +142,35 @@ class HBNBCommand(cmd.Cmd):
                             print("** value missing **")
 
                         else:
-                            stored_dict[key][args[2]] = args[3]
-                            storage.save()
+                            setattr(stored_dict[key], args[2], args[3])
+                            stored_dict[key].save()
                 else:
                     print("** no instance found **")
         else:
             print("** class doesn't exist **")
+
+    def complete_command(self, text, line, begidx, endidx, command):
+        """Common completion method for class-based commands"""
+        if not text:
+            completions = self.CLASS_LIST[:]
+        else:
+            completions = [cls for cls in self.CLASS_LIST if cls.startswith(text)]
+        return completions
+
+    def complete_create(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'create')
+
+    def complete_destroy(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'destroy')
+
+    def complete_show(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'show')
+
+    def complete_all(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'all')
+
+    def complete_update(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'update')
 
     def do_quit(self, arg):
         """Quits command to exit the program"""
@@ -161,6 +179,9 @@ class HBNBCommand(cmd.Cmd):
     def do_EOF(self, arg):
         """EOF (Ctrl+D) command to exit the program"""
         return True
+
+    # Quit the interpreter using exit
+    do_exit = do_quit
 
     def emptyline(self):
         """Called when an empty line is entered"""
