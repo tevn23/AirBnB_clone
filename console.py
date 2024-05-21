@@ -149,7 +149,7 @@ class HBNBCommand(cmd.Cmd):
                             args[2] = ast.literal_eval(args[2])
                         except (ValueError, SyntaxError):
                             print("An error occured")
-                        print(args[2:], type(args[2]))
+
                         if len(args) == 3 and not isinstance(args[2], dict):
                             print("** value missing **")
 
@@ -261,7 +261,7 @@ class HBNBCommand(cmd.Cmd):
             return rebuilt_cmd
 
         else:
-            return arg  # Return original line
+            return arg  # Return original argument
 
     def emptyline(self):
         """Called when an empty line is entered"""
