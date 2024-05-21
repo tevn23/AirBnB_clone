@@ -2,6 +2,7 @@
 """
 Contains the command interpreter for the Airbnb clone
 """
+import ast
 import cmd
 import shlex
 from models import storage
@@ -33,7 +34,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, arg):
         """Creates and saves a new instance of BaseModel"""
-        args = arg.split()
+        args = shlex.split(arg)
 
         if not args:
             print("** class name missing **")
@@ -52,7 +53,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_show(self, arg):
         """Prints an instance string representation"""
-        args = arg.split()
+        args = shlex.split(arg)
 
         if args:
             if args[0] in self.class_list:
@@ -74,7 +75,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_destroy(self, arg):
         """Deletes an instance"""
-        args = arg.split()
+        args = shlex.split(arg)
 
         if not args:
             print("** class name missing **")
@@ -89,6 +90,7 @@ class HBNBCommand(cmd.Cmd):
 
                 if key in stored_dict:
                     del stored_dict[key]
+                    storage.save()
 
                 else:
                     print("** no instance found **")
@@ -97,7 +99,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_all(self, arg):
         """Prints all string representation of all instances"""
-        args = arg.split()
+        args = shlex.split(arg)
 
         class_dict = []
         stored_dict = storage.all()
@@ -110,7 +112,6 @@ class HBNBCommand(cmd.Cmd):
         else:
             if args[0] in self.class_list:
                 for key, val in stored_dict.items():
-
                     if args[0] == val.__class__.__name__:
                         class_dict.append(str(val))
                 print(class_dict)
@@ -120,6 +121,11 @@ class HBNBCommand(cmd.Cmd):
 
     def do_update(self, arg):
         """Updates an instance"""
+        # Handles dict interpretation
+        arg = arg.replace("'", '"')
+        arg = arg.replace('{', "'{")
+        arg = arg.replace('}', "}'")
+
         args = shlex.split(arg)
 
         if not args:
@@ -138,9 +144,18 @@ class HBNBCommand(cmd.Cmd):
                         print("** attribute name missing **")
 
                     else:
-                        if len(args) == 3:
+                        # safe evaluation of str argument
+                        try:
+                            args[2] = ast.literal_eval(args[2])
+                        except (ValueError, SyntaxError):
+                            print("An error occured")
+                        print(args[2:], type(args[2]))
+                        if len(args) == 3 and not isinstance(args[2], dict):
                             print("** value missing **")
 
+                        elif isinstance(args[2], dict):
+                            for ky, val in args[2].items():
+                                setattr(stored_dict[key], ky, val)
                         else:
                             setattr(stored_dict[key], args[2], args[3])
                             stored_dict[key].save()
@@ -149,12 +164,33 @@ class HBNBCommand(cmd.Cmd):
         else:
             print("** class doesn't exist **")
 
+    def do_count(self, arg):
+        """Retrieve the number of instances of a class"""
+        args = shlex.split(arg)
+
+        count = 0
+        stored_dict = storage.all()
+
+        if not args:
+            print(len(stored_dict))
+
+        else:
+            if args[0] in self.class_list:
+                for key, val in stored_dict.items():
+                    if args[0] == val.__class__.__name__:
+                        count += 1
+                print(count)
+
+            else:
+                print("** class doesn't exist **")
+
     def complete_command(self, text, line, begidx, endidx, command):
         """Common completion method for class-based commands"""
         if not text:
             completions = self.CLASS_LIST[:]
         else:
-            completions = [cls for cls in self.CLASS_LIST if cls.startswith(text)]
+            completions = [cls + ' ' for cls in self.CLASS_LIST
+                           if cls.startswith(text)]
         return completions
 
     def complete_create(self, text, line, begidx, endidx):
@@ -172,6 +208,9 @@ class HBNBCommand(cmd.Cmd):
     def complete_update(self, text, line, begidx, endidx):
         return self.complete_command(text, line, begidx, endidx, 'update')
 
+    def complete_count(self, text, line, begidx, endidx):
+        return self.complete_command(text, line, begidx, endidx, 'count')
+
     def do_quit(self, arg):
         """Quits command to exit the program"""
         return True
@@ -182,6 +221,47 @@ class HBNBCommand(cmd.Cmd):
 
     # Quit the interpreter using exit
     do_exit = do_quit
+
+    def precmd(self, arg):
+        """Calls commands using <class_name>.command()"""
+        if '.' in arg:
+            # Extract command and arguments
+            parts = arg.split('.')
+            cls_name, cmd_parts = parts[0], parts[1].split('(')
+            cmd = cmd_parts[0]
+            # Processing for dictionary arguments
+            if '{' in cmd_parts[1]:
+                cmd_args = cmd_parts[1].split('{')
+                id_arg = cmd_args[0].strip()
+                id_arg = id_arg.rstrip(',')
+                dict_arg = '{' + cmd_args[1].rstrip(')')
+
+                rebuilt_arg = f"{cmd} {cls_name} {id_arg} {dict_arg}"
+
+                return rebuilt_arg
+
+            # Extract the argument from within parentheses (if present)
+            if len(cmd_parts) > 1:
+                # Remove trailing parenthesis
+                raw_args = cmd_parts[1].rstrip(')')
+
+                # Process raw string args to remove delimiters like ','
+                list(raw_args)
+                args = "".join(char for char in raw_args if char != ',')
+
+            else:
+                args = None
+
+            # Rebuild the command and return it for processing
+            if args:
+                rebuilt_cmd = f"{cmd} {cls_name} {args}"
+            else:
+                rebuilt_cmd = f"{cmd} {cls_name}"
+
+            return rebuilt_cmd
+
+        else:
+            return arg  # Return original line
 
     def emptyline(self):
         """Called when an empty line is entered"""
