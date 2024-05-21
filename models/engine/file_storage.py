@@ -10,7 +10,6 @@ class FileStorage:
     __file_path = "data.json"
     __objects = {}
 
-
     def all(self):
         """Return all instances dict representation"""
         return self.__objects
