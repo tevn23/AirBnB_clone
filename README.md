@@ -33,5 +33,3 @@ $ ["[BaseModel] (2dd6ef5c-467c-4f82-9521-a772ea7d84e9) {'id': '2dd6ef5c-467c-4f8
 5. $ destroy BaseModel 49faff9a-6318-451f-87b6-910505c55907
 $ show BaseModel 49faff9a-6318-451f-87b6-910505c55907
 $ ** no instance found **
-
-
